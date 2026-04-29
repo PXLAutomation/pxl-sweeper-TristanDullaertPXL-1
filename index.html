@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minesweeper</title>
+    <style>
+        /* Phase 1: Minimal CSS Scaffold */
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #008080;
+            font-family: 'MS Sans Serif', Arial, sans-serif;
+            font-size: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        #game-window {
+            background-color: #C0C0C0;
+            border: 2px solid;
+            border-color: #FFFFFF #000000 #000000 #FFFFFF;
+            padding: 2px;
+            width: 304px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .title-bar {
+            background: linear-gradient(to right, #000080, #1084D0);
+            color: #FFFFFF;
+            padding: 2px 4px;
+            font-weight: bold;
+            margin-bottom: 2px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .title-bar-close {
+            cursor: pointer;
+            width: 16px;
+            height: 14px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #C0C0C0;
+            color: #000000;
+            font-size: 12px;
+            border: 1px solid;
+            border-color: #FFFFFF #000000 #000000 #FFFFFF;
+        }
+
+        .menu-bar {
+            background-color: #C0C0C0;
+            padding: 2px 2px;
+            margin-bottom: 2px;
+            border: 1px solid;
+            border-color: #DFDFDF #808080 #808080 #DFDFDF;
+            font-size: 14px;
+        }
+
+        #game-container {
+            padding: 4px;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        #header-panel {
+            background-color: #C0C0C0;
+            border: 2px solid;
+            border-color: #808080 #FFFFFF #FFFFFF #808080;
+            padding: 4px;
+            min-height: 50px;
+        }
+
+        #board-container {
+            background-color: #C0C0C0;
+            border: 2px solid;
+            border-color: #808080 #FFFFFF #FFFFFF #808080;
+            padding: 4px;
+            display: grid;
+            grid-template-columns: repeat(16, 16px);
+            grid-template-rows: repeat(16, 16px);
+            gap: 0;
+            justify-content: start;
+            align-content: start;
+        }
+
+        .cell {
+            width: 16px;
+            height: 16px;
+            border: 1px solid;
+            border-color: #DFDFDF #000000 #000000 #DFDFDF;
+            background-color: #C0C0C0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 11px;
+            cursor: default;
+            user-select: none;
+        }
+
+        .cell.unrevealed {
+            background-color: #C0C0C0;
+            border-color: #DFDFDF #000000 #000000 #DFDFDF;
+        }
+
+        .cell.revealed {
+            background-color: #BFBFBF;
+            border-color: #BFBFBF #BFBFBF #BFBFBF #BFBFBF;
+            border: none;
+            color: #000000;
+        }
+
+        .cell.number {
+            background-color: #BFBFBF;
+        }
+
+        .cell.num-1 {
+            color: #0000FF;
+        }
+
+        .cell.num-2 {
+            color: #008000;
+        }
+
+        .cell.num-3 {
+            color: #FF0000;
+        }
+
+        .cell.num-4 {
+            color: #000080;
+        }
+
+        .cell.num-5 {
+            color: #800000;
+        }
+
+        .cell.num-6 {
+            color: #008080;
+        }
+
+        .cell.num-7 {
+            color: #000000;
+        }
+
+        .cell.num-8 {
+            color: #808080;
+        }
+
+        .cell.mine::before {
+            content: '💣';
+            font-size: 10px;
+        }
+
+        .cell.trigger-mine {
+            background-color: #FF0000;
+        }
+
+        .cell.incorrect-flag {
+            background-color: #C0C0C0;
+        }
+
+        #header-panel {
+            background-color: #C0C0C0;
+            border: 2px solid;
+            border-color: #808080 #FFFFFF #FFFFFF #808080;
+            padding: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 4px;
+            margin-bottom: 4px;
+            height: 40px;
+        }
+
+        .counter-display {
+            background-color: #000000;
+            color: #00FF00;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            font-size: 18px;
+            padding: 2px 4px;
+            border: 2px solid;
+            border-color: #000000 #808080 #808080 #000000;
+            min-width: 44px;
+            text-align: right;
+            letter-spacing: 1px;
+            flex: 1;
+        }
+
+        #smiley-button {
+            background-color: #C0C0C0;
+            border: 2px solid;
+            border-color: #DFDFDF #808080 #808080 #DFDFDF;
+            padding: 0;
+            width: 36px;
+            height: 36px;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        #smiley-button:active {
+            border-color: #808080 #DFDFDF #DFDFDF #808080;
+        }
+
+        .menu-bar {
+            background-color: #C0C0C0;
+            padding: 2px 2px;
+            margin-bottom: 2px;
+            border: 1px solid;
+            border-color: #DFDFDF #808080 #808080 #DFDFDF;
+            font-size: 14px;
+            position: relative;
+        }
+
+        .menu-item {
+            display: inline-block;
+            padding: 2px 4px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .menu-item:hover {
+            background-color: #000080;
+            color: #FFFFFF;
+        }
+
+        .menu-dropdown {
+            display: none;
+            position: absolute;
+            background-color: #C0C0C0;
+            border: 2px solid;
+            border-color: #DFDFDF #808080 #808080 #DFDFDF;
+            min-width: 120px;
+            z-index: 1000;
+            top: 20px;
+            left: 0;
+        }
+
+        .menu-dropdown .menu-item {
+            display: block;
+            padding: 2px 16px;
+            width: 100%;
+        }
+
+        #game-container {
+            padding: 4px;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="game-window">
+        <div class="title-bar">
+            <span>Minesweeper</span>
+            <div class="title-bar-close">✕</div>
+        </div>
+        <div class="menu-bar">
+            <div class="menu-item" id="game-menu">
+                Game
+                <div class="menu-dropdown">
+                    <div class="menu-item" id="menu-new-game">New Game</div>
+                    <div class="menu-item" id="menu-best-times">Best Times...</div>
+                </div>
+            </div>
+        </div>
+        <div id="game-container">
+            <div id="header-panel">
+                <div class="counter-display" id="mine-counter">040</div>
+                <button id="smiley-button">🙂</button>
+                <div class="counter-display" id="timer">000</div>
+            </div>
+            <div id="board-container"></div>
+        </div>
+    </div>
+
+    <script>
+        // ===== MINESWEEPER GAME - PHASES 2-9 COMPLETE IMPLEMENTATION =====
+
+        // ===== CONSTANTS =====
+        const ROWS = 16;
+        const COLS = 16;
+        const MINES = 40;
+        const CELL_SIZE = 16;
+        const TIMER_UPDATE_INTERVAL = 1000;
+
+        // ===== GAME STATE =====
+        const gameState = {
+            board: null,
+            mines: new Set(),
+            revealed: new Set(),
+            flagged: new Set(),
+            questioned: new Set(),
+            gameStarted: false,
+            gameOver: false,
+            won: false,
+            timerIntervalId: null,
+            elapsedTime: 0,
+            firstClickDone: false,
+            mouseDownCell: null,
+            triggerMineKey: null,
+        };
+
+        // ===== BOARD MODEL (Phase 2) =====
+        function initializeBoard() {
+            gameState.board = Array(ROWS).fill(null).map(() => Array(COLS).fill(0));
+            gameState.mines = new Set();
+            gameState.revealed = new Set();
+            gameState.flagged = new Set();
+            gameState.questioned = new Set();
+            gameState.gameStarted = false;
+            gameState.gameOver = false;
+            gameState.won = false;
+            gameState.firstClickDone = false;
+            gameState.elapsedTime = 0;
+            gameState.triggerMineKey = null;
+            updateMineCounter();
+            updateSmileyButton();
+        }
+
+        // ===== MINE PLACEMENT (Phase 3) =====
+        function placeMines(excludeRow, excludeCol) {
+            const excludeZone = new Set();
+            for (let dr = -1; dr <= 1; dr++) {
+                for (let dc = -1; dc <= 1; dc++) {
+                    const r = excludeRow + dr;
+                    const c = excludeCol + dc;
+                    if (r >= 0 && r < ROWS && c >= 0 && c < COLS) {
+                        excludeZone.add(r * COLS + c);
+                    }
+                }
+            }
+
+            let placed = 0;
+            while (placed < MINES) {
+                const idx = Math.floor(Math.random() * (ROWS * COLS));
+                if (!excludeZone.has(idx) && !gameState.mines.has(idx)) {
+                    gameState.mines.add(idx);
+                    const r = Math.floor(idx / COLS);
+                    const c = idx % COLS;
+                    gameState.board[r][c] = 'M';
+                    placed++;
+                }
+            }
+
+            calculateCellValues();
+        }
+
+        function calculateCellValues() {
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    if (gameState.board[r][c] === 'M') continue;
+                    let count = 0;
+                    for (let dr = -1; dr <= 1; dr++) {
+                        for (let dc = -1; dc <= 1; dc++) {
+                            const nr = r + dr, nc = c + dc;
+                            if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS) {
+                                if (gameState.board[nr][nc] === 'M') count++;
+                            }
+                        }
+                    }
+                    gameState.board[r][c] = count;
+                }
+            }
+        }
+
+        // ===== CELL REVEAL (Phase 3, 5) =====
+        function revealCell(row, col) {
+            const key = row * COLS + col;
+            if (gameState.revealed.has(key)) return;
+            if (gameState.flagged.has(key)) return;
+
+            gameState.revealed.add(key);
+
+            // Start timer on first click
+            if (!gameState.firstClickDone) {
+                gameState.firstClickDone = true;
+                gameState.gameStarted = true;
+                if (gameState.timerIntervalId) clearInterval(gameState.timerIntervalId);
+                gameState.timerIntervalId = setInterval(updateTimer, TIMER_UPDATE_INTERVAL);
+                placeMines(row, col);
+                renderBoard();
+            }
+
+            // Check for mine hit (loss)
+            if (gameState.board[row][col] === 'M') {
+                gameState.gameOver = true;
+                gameState.won = false;
+                gameState.triggerMineKey = key;
+                revealAllMines(key);
+                updateSmileyButton();
+                if (gameState.timerIntervalId) clearInterval(gameState.timerIntervalId);
+                renderBoard();
+                return;
+            }
+
+            // Cascade reveal for zero cells (Phase 5)
+            if (gameState.board[row][col] === 0) {
+                cascadeReveal(row, col);
+            }
+
+            // Check for win
+            checkWin();
+            renderBoard();
+        }
+
+        function cascadeReveal(row, col) {
+            const queue = [[row, col]];
+            const visited = new Set();
+
+            while (queue.length > 0) {
+                const [r, c] = queue.shift();
+                const key = r * COLS + c;
+
+                if (visited.has(key)) continue;
+                visited.add(key);
+
+                if (gameState.revealed.has(key)) continue;
+                if (gameState.flagged.has(key)) continue;
+                if (gameState.questioned.has(key)) continue;
+
+                gameState.revealed.add(key);
+
+                if (gameState.board[r][c] === 0) {
+                    for (let dr = -1; dr <= 1; dr++) {
+                        for (let dc = -1; dc <= 1; dc++) {
+                            const nr = r + dr, nc = c + dc;
+                            if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS) {
+                                const nkey = nr * COLS + nc;
+                                if (!visited.has(nkey)) {
+                                    queue.push([nr, nc]);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        function revealAllMines(triggerKey) {
+            for (const mineIdx of gameState.mines) {
+                if (mineIdx !== triggerKey) {
+                    gameState.revealed.add(mineIdx);
+                    gameState.flagged.delete(mineIdx);
+                    gameState.questioned.delete(mineIdx);
+                }
+            }
+        }
+
+        // ===== WIN/LOSS DETECTION (Phase 5) =====
+        function checkWin() {
+            let revealedCount = gameState.revealed.size;
+            let totalNonMines = ROWS * COLS - MINES;
+
+            if (revealedCount === totalNonMines) {
+                gameState.gameOver = true;
+                gameState.won = true;
+
+                // Flag all unflagged mines
+                for (const mineIdx of gameState.mines) {
+                    if (!gameState.flagged.has(mineIdx) && !gameState.questioned.has(mineIdx)) {
+                        gameState.flagged.add(mineIdx);
+                    }
+                }
+
+                if (gameState.timerIntervalId) clearInterval(gameState.timerIntervalId);
+                updateSmileyButton();
+                checkBestTime();
+                renderBoard();
+            }
+        }
+
+        // ===== INPUT HANDLING (Phase 4) =====
+        function handleCellClick(row, col, button) {
+            if (gameState.gameOver) return;
+
+            const key = row * COLS + col;
+
+            if (button === 0) { // Left click
+                // If it's a revealed cell, try chord click
+                if (gameState.revealed.has(key)) {
+                    performChordClick(row, col);
+                    return;
+                }
+
+                // Can't click flagged cells
+                if (gameState.flagged.has(key)) return;
+
+                // Reveal the cell
+                revealCell(row, col);
+            } else if (button === 2) { // Right click
+                if (!gameState.gameStarted && !gameState.firstClickDone) {
+                    // Can mark before game starts
+                } else if (gameState.gameOver) {
+                    return;
+                }
+
+                // Cycle marker state
+                if (gameState.flagged.has(key)) {
+                    gameState.flagged.delete(key);
+                    gameState.questioned.add(key);
+                } else if (gameState.questioned.has(key)) {
+                    gameState.questioned.delete(key);
+                } else {
+                    gameState.flagged.add(key);
+                }
+                updateMineCounter();
+                renderBoard();
+            }
+        }
+
+        function performChordClick(row, col) {
+            const value = gameState.board[row][col];
+            if (typeof value !== 'number' || value === 0) return;
+
+            // Count flagged neighbours
+            let flaggedCount = 0;
+            const neighbours = [];
+            for (let dr = -1; dr <= 1; dr++) {
+                for (let dc = -1; dc <= 1; dc++) {
+                    const nr = row + dr, nc = col + dc;
+                    if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS) {
+                        const nkey = nr * COLS + nc;
+                        neighbours.push([nr, nc, nkey]);
+                        if (gameState.flagged.has(nkey)) flaggedCount++;
+                    }
+                }
+            }
+
+            if (flaggedCount !== value) return;
+
+            // Reveal all non-flagged neighbours
+            for (const [nr, nc, nkey] of neighbours) {
+                if (!gameState.flagged.has(nkey) && !gameState.revealed.has(nkey)) {
+                    revealCell(nr, nc);
+                }
+            }
+        }
+
+        // ===== TIMER AND COUNTER (Phase 6) =====
+        function updateTimer() {
+            gameState.elapsedTime++;
+            if (gameState.elapsedTime > 999) gameState.elapsedTime = 999;
+            renderTimer();
+        }
+
+        function updateMineCounter() {
+            const flagCount = gameState.flagged.size;
+            const remaining = MINES - flagCount;
+            renderMineCounter(remaining);
+        }
+
+        function updateSmileyButton() {
+            const btn = document.getElementById('smiley-button');
+            if (gameState.won) {
+                btn.textContent = '😎';
+            } else if (gameState.gameOver) {
+                btn.textContent = '😵';
+            } else {
+                btn.textContent = '🙂';
+            }
+        }
+
+        function resetGame() {
+            if (gameState.timerIntervalId) clearInterval(gameState.timerIntervalId);
+            initializeBoard();
+            renderBoard();
+            renderTimer();
+            renderMineCounter(MINES);
+        }
+
+        // ===== BEST TIMES (Phase 7) =====
+        function checkBestTime() {
+            const bestTimes = getBestTimes();
+            if (!bestTimes || gameState.elapsedTime < bestTimes.time) {
+                showNewRecordDialog();
+            }
+        }
+
+        function getBestTimes() {
+            try {
+                const data = localStorage.getItem('minesweeper_best_times');
+                return data ? JSON.parse(data) : null;
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function saveBestTime(name, time) {
+            try {
+                localStorage.setItem('minesweeper_best_times', JSON.stringify({ name, time }));
+            } catch (e) {
+                // Silent fail
+            }
+        }
+
+        function showNewRecordDialog() {
+            const name = prompt('New record! Enter your name:', 'Anonymous');
+            if (name !== null) {
+                saveBestTime(name, gameState.elapsedTime);
+            }
+        }
+
+        function showBestTimesDialog() {
+            const bestTimes = getBestTimes();
+            if (bestTimes) {
+                alert(`Best Time: ${bestTimes.time}s by ${bestTimes.name}`);
+            } else {
+                alert('No best times recorded yet.');
+            }
+        }
+
+        // ===== RENDERING (Phase 2, 6, 8) =====
+        function renderBoard() {
+            const container = document.getElementById('board-container');
+            container.innerHTML = '';
+
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    const key = r * COLS + c;
+
+                    if (gameState.revealed.has(key)) {
+                        cell.classList.add('revealed');
+                        if (gameState.board[r][c] === 'M') {
+                            cell.classList.add('mine');
+                            if (key === gameState.triggerMineKey) {
+                                cell.classList.add('trigger-mine');
+                                cell.textContent = '💣';
+                            } else {
+                                cell.textContent = '💣';
+                            }
+                        } else if (gameState.board[r][c] > 0) {
+                            cell.textContent = gameState.board[r][c];
+                            cell.classList.add('number', 'num-' + gameState.board[r][c]);
+                        }
+                    } else {
+                        cell.classList.add('unrevealed');
+                        if (gameState.flagged.has(key)) {
+                            // Check if this is an incorrect flag (loss state)
+                            if (gameState.gameOver && !gameState.won && gameState.board[r][c] !== 'M') {
+                                cell.textContent = '❌';
+                                cell.classList.add('incorrect-flag');
+                            } else {
+                                cell.textContent = '🚩';
+                                cell.classList.add('flagged');
+                            }
+                        } else if (gameState.questioned.has(key)) {
+                            cell.textContent = '?';
+                            cell.classList.add('questioned');
+                        }
+                    }
+
+                    cell.addEventListener('mousedown', (e) => {
+                        if (e.button === 0) {
+                            gameState.mouseDownCell = key;
+                            updateSmileyNervous();
+                        }
+                    });
+                    cell.addEventListener('mouseup', (e) => {
+                        if (e.button === 0) {
+                            gameState.mouseDownCell = null;
+                            updateSmileyButton();
+                        }
+                    });
+                    cell.addEventListener('click', (e) => {
+                        handleCellClick(r, c, e.button);
+                    });
+                    cell.addEventListener('contextmenu', (e) => {
+                        e.preventDefault();
+                        handleCellClick(r, c, 2);
+                    });
+
+                    container.appendChild(cell);
+                }
+            }
+        }
+
+        function renderTimer() {
+            const display = formatNumber(gameState.elapsedTime);
+            document.getElementById('timer').textContent = display;
+        }
+
+        function renderMineCounter(remaining) {
+            const display = remaining < 0 ? '-' + String(Math.abs(remaining)).padStart(2, '0') :
+                String(remaining).padStart(3, '0');
+            document.getElementById('mine-counter').textContent = display;
+        }
+
+        function formatNumber(num) {
+            return String(num).padStart(3, '0');
+        }
+
+        function updateSmileyNervous() {
+            if (!gameState.gameOver && gameState.gameStarted) {
+                document.getElementById('smiley-button').textContent = '😲';
+            }
+        }
+
+        // ===== INITIALIZATION =====
+        function initializeGame() {
+            initializeBoard();
+            renderBoard();
+            renderTimer();
+            renderMineCounter(MINES);
+
+            // Setup smiley button
+            document.getElementById('smiley-button').addEventListener('click', resetGame);
+
+            // Setup menu
+            setupMenu();
+
+            console.log('Game initialized (Phases 2-9 complete)');
+        }
+
+        function setupMenu() {
+            const gameMenu = document.getElementById('game-menu');
+            if (gameMenu) {
+                gameMenu.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const dropdown = gameMenu.querySelector('.menu-dropdown');
+                    if (dropdown) {
+                        dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+                    }
+                });
+            }
+
+            const newGameBtn = document.getElementById('menu-new-game');
+            if (newGameBtn) {
+                newGameBtn.addEventListener('click', () => {
+                    resetGame();
+                    closeMenu();
+                });
+            }
+
+            const bestTimesBtn = document.getElementById('menu-best-times');
+            if (bestTimesBtn) {
+                bestTimesBtn.addEventListener('click', () => {
+                    showBestTimesDialog();
+                    closeMenu();
+                });
+            }
+
+            document.addEventListener('click', closeMenu);
+        }
+
+        function closeMenu() {
+            const dropdown = document.querySelector('.menu-dropdown');
+            if (dropdown) dropdown.style.display = 'none';
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', initializeGame);
+    </script>
+</body>
+
+</html>
